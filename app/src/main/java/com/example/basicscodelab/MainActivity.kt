@@ -3,6 +3,9 @@ package com.example.basicscodelab
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -72,26 +75,33 @@ private fun Greetings(
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
+private fun Greeting(name: String, modifier: Modifier = Modifier) {
     var isExpanded by rememberSaveable { mutableStateOf(false) }
-    val extraPadding = if (isExpanded) 48.dp else 0.dp
+
+    val extraPadding by animateDpAsState(
+        if (isExpanded) 48.dp else 0.dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        )
+    )
     Surface(
         color = MaterialTheme.colorScheme.primary,
         modifier = modifier.padding(vertical = 4.dp, horizontal = 8.dp)
     ) {
         Row(modifier = Modifier.padding(24.dp)) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(extraPadding)
+            Column(modifier = Modifier
+                .weight(1f)
+                //Coerce at least 0 prevents from crashing the app
+                .padding(bottom = extraPadding.coerceAtLeast(0.dp))
             ) {
-                Text(text = "Hello ")
+                Text(text = "Hello, ")
                 Text(text = name)
             }
             ElevatedButton(
                 onClick = { isExpanded = !isExpanded }
             ) {
-                Text(if (isExpanded)  "Show less" else "Show more")
+                Text(if (isExpanded) "Show less" else "Show more")
             }
 
         }
